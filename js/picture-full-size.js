@@ -1,3 +1,5 @@
+import {isEscapeKey} from './util.js';
+
 export {showFullSizePhoto};
 
 let fullSizeForm = document.querySelector('.big-picture');
@@ -21,13 +23,13 @@ function showFullSizePhoto(element, photo) {
     commentsList.append(commentElement);
   }
   fullSizeForm.classList.remove('hidden');
-  document.addEventListener('keydown', myClick);
+  document.addEventListener('keydown', onFullSizePhotoEscKeydown, { once: true });
 }
 
-function myClick(event) {
-  if(event.keyCode === 27) {
+function onFullSizePhotoEscKeydown(event) {
+  if(isEscapeKey(event)) {
+    event.preventDefault();
     fullSizeForm.classList.add('hidden');
     document.querySelector('body').classList.remove('modal-open');
-    document.removeEventListener('keydown', event);
   }
 }
