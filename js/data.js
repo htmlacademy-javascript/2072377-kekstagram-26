@@ -2,14 +2,14 @@ import {getRandomIntInclusive} from './util.js';
 
 export {createRandomPhoto};
 
-const phrases = ['Всё отлично!',
+const PHRASES = ['Всё отлично!',
   'В целом всё неплохо. Но не всё.',
   'Когда вы делаете фотографию, хорошо бы убирать палец из кадра. В конце концов это просто непрофессионально.',
   'Моя бабушка случайно чихнула с фотоаппаратом в руках и у неё получилась фотография лучше.',
   'Я поскользнулся на банановой кожуре и уронил фотоаппарат на кота и у меня получилась фотография лучше.',
   'Лица у людей на фотке перекошены, как будто их избивают. Как можно было поймать такой неудачный момент?!',];
 
-const names = ['Артём',
+const NAMES = ['Артём',
   'Сергей',
   'Конь',
   'Бабка с пистолетом',
@@ -44,8 +44,8 @@ function createRandomComments(count) {
     const comment = {
       id: idComment,
       avatar: `img/avatar-${getRandomIntInclusive(1, 6)}.svg`,
-      message: phrases[getRandomIntInclusive(0, phrases.length - 1)],
-      name: names[getRandomIntInclusive(0, names.length - 1)],
+      message: PHRASES[getRandomIntInclusive(0, PHRASES.length - 1)],
+      name: NAMES[getRandomIntInclusive(0, NAMES.length - 1)],
     };
     comments.push(comment);
   }

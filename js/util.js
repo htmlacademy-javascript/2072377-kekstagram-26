@@ -1,4 +1,4 @@
-export {getRandomIntInclusive, checkStringLength};
+export {getRandomIntInclusive, checkStringLength, isEscapeKey};
 
 // функция получения случайного числа на рекомендованную курсом
 function getRandomIntInclusive(min, max) {
@@ -10,4 +10,8 @@ function getRandomIntInclusive(min, max) {
 
 function checkStringLength(string, maxLength) {
   return string.length <= maxLength;
+}
+
+function isEscapeKey(event) {
+  return event.keyCode === 27;
 }
