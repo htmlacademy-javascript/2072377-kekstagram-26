@@ -32,36 +32,22 @@ function closeFullSizePhoto(event) {
 }
 
 function addCommentList(coments) {
+  commentsList.innerHTML = '';
   if (coments.length === 0) {
     fullSizeForm.querySelector('.social__comment-count').textContent = 'Комментариев нет';
     loadMoreCommentBtn.classList.add('hidden');
-    commentsList.innerHTML = '';
-  } else if (coments.length <= 5){
-    fullSizeForm.querySelector('.social__comment-count').textContent = `${coments.length} из ${coments.length} комментариев`;
-    loadMoreCommentBtn.classList.add('hidden');
-    commentsList.innerHTML = '';
-    for (const comment of coments) {
-      const commentElement = document.createElement('li');
-      commentElement.innerHTML = '';
-      commentElement.classList.add('social__comment');
-      commentElement.innerHTML = `<img class="social__picture" src="${comment.avatar}" alt="${comment.name}" width="35" height="35"><p class="social__text">${comment.message}</p>`;
-      commentsList.append(commentElement);
-    }
-  } else {
-    fullSizeForm.querySelector('.social__comment-count').textContent = `5 из ${coments.length} комментариев`;
-    loadMoreCommentBtn.classList.remove('hidden');
-    commentsList.innerHTML = '';
-    for (let i = 0; i < coments.length; i++) {
-      const commentElement = document.createElement('li');
-      commentElement.innerHTML = '';
-      commentElement.classList.add('social__comment');
-      commentElement.classList.add('hidden');
-      commentElement.innerHTML = `<img class="social__picture" src="${coments[i].avatar}" alt="${coments[i].name}" width="35" height="35"><p class="social__text">${coments[i].message}</p>`;
-      commentsList.append(commentElement);
-    }
-    loadMoreComments();
-    loadMoreCommentBtn.addEventListener('click', loadMoreComments);
+    return;
   }
+  for (const comment of coments) {
+    const commentElement = document.createElement('li');
+    commentElement.innerHTML = '';
+    commentElement.classList.add('social__comment');
+    commentElement.classList.add('hidden');
+    commentElement.innerHTML = `<img class="social__picture" src="${comment.avatar}" alt="${comment.name}" width="35" height="35"><p class="social__text">${comment.message}</p>`;
+    commentsList.append(commentElement);
+  }
+  loadMoreComments();
+  loadMoreCommentBtn.addEventListener('click', loadMoreComments);
 }
 
 function loadMoreComments(){
@@ -70,6 +56,7 @@ function loadMoreComments(){
     firstNumber[i].classList.remove('hidden');
     showCommentCounter++;
   }
+  loadMoreCommentBtn.classList.remove('hidden');
   fullSizeForm.querySelector('.social__comment-count').textContent = `${showCommentCounter} из ${commentsList.querySelectorAll('.social__comment').length} комментариев`;
   if (firstNumber.length <= 5) {
     loadMoreCommentBtn.classList.add('hidden');
