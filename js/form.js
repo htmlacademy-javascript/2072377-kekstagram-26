@@ -1,4 +1,8 @@
 import {isEscapeKey} from './util.js';
+import {sendFotoToServer} from './network.js';
+import {showSuccessLoadMessage, showErrorLoadPhotoMessage} from './modal-windows.js';
+
+export {closeImageEditingForm};
 
 const uploadFile = document.querySelector('#upload-file');
 const cancelBtnEditingForm = document.querySelector('#upload-cancel');
@@ -12,9 +16,11 @@ const pristine = new Pristine(imageEditingForm);
 const effectsList = document.querySelector('.effects__list');
 const slider = document.querySelector('.effect-level__slider');
 const effectLevelValue = document.querySelector('.effect-level__value');
+const submitButton = document.querySelector('#upload-submit');
 
 uploadFile.addEventListener('change', feelClickOnUploadFile);
-
+pristine.addValidator(imageEditingForm.querySelector('.text__hashtags'), validateHashtag, 'В поле можно вводить русские и латинские буквы, числа. Длинна до 20 символов.');
+pristine.addValidator(imageEditingForm.querySelector('.text__description'), validateTextComment, 'Максимальная блинна комментария - 140 символов.');
 
 function feelClickOnUploadFile() {
   /*const img = previewImage.querySelector('img');
@@ -37,7 +43,7 @@ function feelClickOnUploadFile() {
 
 function closeImageEditingForm(event) {
   if(!(document.activeElement.matches('.text__hashtags') || document.activeElement.matches('.text__description')) &&
-      (isEscapeKey(event) || (event.target.matches('#upload-cancel')))) {
+      (isEscapeKey(event) || event.target.matches('#upload-cancel') || event.type === 'submit')) {
     event.preventDefault();
     imagePreviewEditingForm.classList.add('hidden');
     document.querySelector('body').classList.remove('modal-open');
@@ -60,11 +66,32 @@ function closeImageEditingForm(event) {
   }
 }
 
+const blockSubmitButton = () => {
+  submitButton.disabled = true;
+};
+
+const unblockSubmitButton = () => {
+  submitButton.disabled = false;
+};
+
 imageEditingForm.addEventListener('submit', (event) => {
   event.preventDefault();
   const isValid = pristine.validate();
   if (isValid) {
-    imageEditingForm.submit();
+    blockSubmitButton();
+    sendFotoToServer(
+      () => {
+        closeImageEditingForm(event);
+        showSuccessLoadMessage();
+        unblockSubmitButton();
+      },
+      () => {
+        document.removeEventListener('keydown', closeImageEditingForm);
+        showErrorLoadPhotoMessage();
+        unblockSubmitButton();
+      },
+      new FormData(imageEditingForm),
+    );
   }
 });
 
@@ -173,4 +200,14 @@ function getSlider(minValue, maxValue, start, step, fix) {
       },
     },
   });
+}
+
+function validateHashtag(value) {
+  const re = new RegExp('^#[A-Za-zА-Яа-яЁё0-9]{1,19}$');
+  return re.test(value);
+}
+
+function validateTextComment(value) {
+  const re = new RegExp('^#[A-Za-zА-Яа-яЁё0-9]{1,19}$');
+  return re.test(value);
 }

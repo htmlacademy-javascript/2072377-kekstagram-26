@@ -1,4 +1,4 @@
-import {showRandomPhoto} from './picture.js';
 import './form.js';
+import {getFotosFromServer} from './network.js';
 
-showRandomPhoto();
+getFotosFromServer();
