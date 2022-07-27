@@ -1,17 +1,16 @@
-import {createRandomPhoto} from './data.js';
 import {showFullSizePhoto} from './picture-full-size.js';
 
 export {showRandomPhoto};
 
 const photos = [];
 
-function showRandomPhoto() {
+function showRandomPhoto(arrPhoto) {
   const templateFragment = document.querySelector('#picture').content;
   const template = templateFragment.querySelector('a');
   const fragment = document.createDocumentFragment();
   const pictures = document.querySelector('.pictures');
-  for (let i = 1; i < 26; i++) {
-    const photo = createRandomPhoto(i);
+  for (let i = 0; i < arrPhoto.length; i++) {
+    const photo = arrPhoto[i];
     photos.push(photo);
     const element = template.cloneNode(true);
     element.querySelector('img').src = photo.url;
