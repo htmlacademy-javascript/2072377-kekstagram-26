@@ -18,11 +18,7 @@ const effectsList = document.querySelector('.effects__list');
 const slider = document.querySelector('.effect-level__slider');
 const effectLevelValue = document.querySelector('.effect-level__value');
 const submitButton = document.querySelector('#upload-submit');
-const pristine = new Pristine(imageEditingForm, {
-  classTo: 'setup-wizard-form__element',
-  errorTextParent: 'setup-wizard-form__element',
-  errorTextClass: 'setup-wizard-form__error-text',
-});
+const pristine = new Pristine(imageEditingForm);
 
 pristine.addValidator(imageEditingForm.querySelector('.text__hashtags'), validateHashtag, 'Хештег должен начинаться с # и содержать от 1 до 19 букв');
 pristine.addValidator(imageEditingForm.querySelector('.text__description'), validateTextComment, 'Максимальная блинна комментария - 140 символов.');
