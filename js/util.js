@@ -1,4 +1,4 @@
-export {getRandomIntInclusive, checkStringLength, isEscapeKey};
+export {getRandomIntInclusive, checkStringLength, isEscapeKey, debounce};
 
 // функция получения случайного числа на рекомендованную курсом
 function getRandomIntInclusive(min, max) {
@@ -14,4 +14,12 @@ function checkStringLength(string, maxLength) {
 
 function isEscapeKey(event) {
   return event.keyCode === 27;
+}
+
+function debounce(callback, timeoutDelay = 500) { // Функция взята из интернета - https://up.htmlacademy.ru/javascript/26/tasks/21
+  let timeoutId;
+  return (...rest) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => callback.apply(this, rest), timeoutDelay);
+  };
 }

@@ -1,4 +1,4 @@
-import {showRandomPhoto} from './picture.js';
+import {showPhoto} from './picture.js';
 import {showErrorMessage} from './modal-windows.js';
 
 export {getFotosFromServer, sendFotoToServer};
@@ -14,7 +14,7 @@ function getFotosFromServer() {
       throw new Error(`Код ответа сервера "${response.status}". Сообщение "${response.statusText}"`);
     })
     .then((data) => {
-      showRandomPhoto(data);
+      showPhoto(data);
     })
     .catch((err) => {
       showErrorMessage(err.message);
