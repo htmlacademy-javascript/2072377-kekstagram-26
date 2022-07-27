@@ -24,7 +24,7 @@ const pristine = new Pristine(imageEditingForm, {
   errorTextClass: 'setup-wizard-form__error-text',
 });
 
-pristine.addValidator(imageEditingForm.querySelector('.text__hashtags'), validateHashtag, 'В поле можно вводить русские и латинские буквы, числа. Длинна до 20 символов.');
+pristine.addValidator(imageEditingForm.querySelector('.text__hashtags'), validateHashtag, 'Хештег должен начинаться с # и содержать от 1 до 19 букв');
 pristine.addValidator(imageEditingForm.querySelector('.text__description'), validateTextComment, 'Максимальная блинна комментария - 140 символов.');
 
 uploadFile.addEventListener('change', feelClickOnUploadFile);
@@ -68,13 +68,13 @@ function closeImageEditingForm(event) {
   }
 }
 
-const blockSubmitButton = () => {
+function blockSubmitButton() {
   submitButton.disabled = true;
-};
+}
 
-const unblockSubmitButton = () => {
+function unblockSubmitButton() {
   submitButton.disabled = false;
-};
+}
 
 imageEditingForm.addEventListener('submit', (event) => {
   event.preventDefault();
@@ -87,7 +87,6 @@ imageEditingForm.addEventListener('submit', (event) => {
         showSuccessLoadMessage();
         unblockSubmitButton();
         document.querySelector('.img-filters').classList.remove('img-filters--inactive');
-
       },
       () => {
         document.removeEventListener('keydown', closeImageEditingForm);
@@ -208,12 +207,12 @@ function getSlider(minValue, maxValue, start, step, fix) {
 
 function validateHashtag(value) {
   const re = new RegExp('^#[A-Za-zА-Яа-яЁё0-9]{1,19}$');
-  return re.test(value) || !value;
+  const hashtags = value.split(' ');
+  return hashtags.every((elem) => re.test(elem)) || !value;
 }
 
 function validateTextComment(value) {
-  const re = new RegExp('^#[A-Za-zА-Яа-яЁё0-9]{1,19}$');
-  return re.test(value) || !value;
+  return value.length < 141 || !value;
 }
 
 function showImgInPreview() {
