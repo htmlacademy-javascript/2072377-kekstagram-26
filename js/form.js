@@ -4,6 +4,8 @@ import {showSuccessLoadMessage, showErrorLoadPhotoMessage} from './modal-windows
 
 export {closeImageEditingForm};
 
+const FILE_TYPES = ['gif', 'jpg', 'jpeg', 'png'];
+
 const uploadFile = document.querySelector('#upload-file');
 const cancelBtnEditingForm = document.querySelector('#upload-cancel');
 const imageEditingForm = document.querySelector('.img-upload__form');
@@ -12,24 +14,23 @@ const zoonInput = document.querySelector('.scale__control--value');
 const zoomInBtn = document.querySelector('.scale__control--bigger');
 const zoomOutBtn = document.querySelector('.scale__control--smaller');
 const previewImage = document.querySelector('.img-upload__preview');
-const pristine = new Pristine(imageEditingForm);
 const effectsList = document.querySelector('.effects__list');
 const slider = document.querySelector('.effect-level__slider');
 const effectLevelValue = document.querySelector('.effect-level__value');
 const submitButton = document.querySelector('#upload-submit');
+const pristine = new Pristine(imageEditingForm, {
+  classTo: 'setup-wizard-form__element',
+  errorTextParent: 'setup-wizard-form__element',
+  errorTextClass: 'setup-wizard-form__error-text',
+});
 
-uploadFile.addEventListener('change', feelClickOnUploadFile);
 pristine.addValidator(imageEditingForm.querySelector('.text__hashtags'), validateHashtag, 'В поле можно вводить русские и латинские буквы, числа. Длинна до 20 символов.');
 pristine.addValidator(imageEditingForm.querySelector('.text__description'), validateTextComment, 'Максимальная блинна комментария - 140 символов.');
 
+uploadFile.addEventListener('change', feelClickOnUploadFile);
+
 function feelClickOnUploadFile() {
-  /*const img = previewImage.querySelector('img');
-  const file = uploadFile.files[0];
-  if (!file.type.startsWith('image/')){ return; }
-  img.file = file;
-  const reader = new FileReader();
-  reader.onload = (function(aImg) { return function(e) { aImg.src = e.target.result; }; })(img);
-  reader.readAsDataURL(file);*/
+  showImgInPreview();
   imagePreviewEditingForm.classList.remove('hidden');
   document.querySelector('body').classList.add('modal-open');
   document.addEventListener('keydown', closeImageEditingForm);
@@ -45,23 +46,24 @@ function closeImageEditingForm(event) {
   if(!(document.activeElement.matches('.text__hashtags') || document.activeElement.matches('.text__description')) &&
       (isEscapeKey(event) || event.target.matches('#upload-cancel') || event.type === 'submit')) {
     event.preventDefault();
-    imagePreviewEditingForm.classList.add('hidden');
     document.querySelector('body').classList.remove('modal-open');
+    imagePreviewEditingForm.classList.add('hidden');
+    previewImage.classList.remove(effectsList.querySelector(`.effects__preview--${effectsList.querySelector('input:checked').value}`).classList[1]);
+    effectLevelValue.value = '';
+    previewImage.style.filter = '';
+    previewImage.style.transform = '';
+    document.removeEventListener('keydown', closeImageEditingForm);
+    effectsList.querySelector('input:checked').removeAttribute('checked');
+    effectsList.querySelector('#effect-none').setAttribute('checked','');
     zoomInBtn.removeEventListener('change', zoomIn);
     zoomOutBtn.removeEventListener('change', zoomOut);
+    cancelBtnEditingForm.removeEventListener('click', closeImageEditingForm);
     for (const effect of effectsList.querySelectorAll('.effects__label')) {
       effect.removeEventListener('click', chooseEffect);
     }
     if (slider.noUiSlider) {
       slider.noUiSlider.destroy();
     }
-    effectLevelValue.value = '';
-    previewImage.style.filter = '';
-    previewImage.classList.remove(effectsList.querySelector(`.effects__preview--${  effectsList.querySelector('input:checked').value}`).classList[1]);
-    effectsList.querySelector('input:checked').removeAttribute('checked');
-    effectsList.querySelector('#effect-none').setAttribute('checked','');
-    document.removeEventListener('keydown', closeImageEditingForm);
-    cancelBtnEditingForm.removeEventListener('click', closeImageEditingForm);
     imageEditingForm.reset();
   }
 }
@@ -84,6 +86,8 @@ imageEditingForm.addEventListener('submit', (event) => {
         closeImageEditingForm(event);
         showSuccessLoadMessage();
         unblockSubmitButton();
+        document.querySelector('.img-filters').classList.remove('img-filters--inactive');
+
       },
       () => {
         document.removeEventListener('keydown', closeImageEditingForm);
@@ -204,10 +208,20 @@ function getSlider(minValue, maxValue, start, step, fix) {
 
 function validateHashtag(value) {
   const re = new RegExp('^#[A-Za-zА-Яа-яЁё0-9]{1,19}$');
-  return re.test(value);
+  return re.test(value) || !value;
 }
 
 function validateTextComment(value) {
   const re = new RegExp('^#[A-Za-zА-Яа-яЁё0-9]{1,19}$');
-  return re.test(value);
+  return re.test(value) || !value;
+}
+
+function showImgInPreview() {
+  const preview = previewImage.querySelector('img');
+  const file = uploadFile.files[0];
+  const fileName = file.name.toLowerCase();
+  const matches = FILE_TYPES.some((it) => fileName.endsWith(it));
+  if (matches) {
+    preview.src = URL.createObjectURL(file);
+  }
 }
