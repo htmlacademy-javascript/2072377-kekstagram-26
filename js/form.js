@@ -2,9 +2,9 @@ import {isEscapeKey} from './util.js';
 import {sendFotoToServer} from './network.js';
 import {showSuccessLoadMessage, showErrorLoadPhotoMessage} from './modal-windows.js';
 
-export {closeImageEditingForm};
-
 const FILE_TYPES = ['gif', 'jpg', 'jpeg', 'png'];
+const MAX_HASHTAG_COUNT = 5;
+const MAX_LENGTH_COMMENT = 140;
 
 const uploadFile = document.querySelector('#upload-file');
 const cancelBtnEditingForm = document.querySelector('#upload-cancel');
@@ -19,14 +19,17 @@ const slider = document.querySelector('.effect-level__slider');
 const effectLevelValue = document.querySelector('.effect-level__value');
 const submitButton = document.querySelector('#upload-submit');
 const pristine = new Pristine(imageEditingForm);
+const uploadEffectLevel = imagePreviewEditingForm.querySelector('.img-upload__effect-level');
 
-pristine.addValidator(imageEditingForm.querySelector('.text__hashtags'), validateHashtag, 'Хештег должен начинаться с # и содержать от 1 до 19 букв');
-pristine.addValidator(imageEditingForm.querySelector('.text__description'), validateTextComment, 'Максимальная блинна комментария - 140 символов.');
-
-uploadFile.addEventListener('change', feelClickOnUploadFile);
+function initUploadFileForm() {
+  uploadFile.addEventListener('change', feelClickOnUploadFile);
+  pristine.addValidator(imageEditingForm.querySelector('.text__hashtags'), validateHashtag, 'Хештег должен начинаться с # и содержать от 1 до 19 букв');
+  pristine.addValidator(imageEditingForm.querySelector('.text__description'), validateTextComment, 'Максимальная блинна комментария - 140 символов.');
+}
 
 function feelClickOnUploadFile() {
   showImgInPreview();
+  uploadEffectLevel.classList.add('hidden');
   imagePreviewEditingForm.classList.remove('hidden');
   document.querySelector('body').classList.add('modal-open');
   document.addEventListener('keydown', closeImageEditingForm);
@@ -38,10 +41,10 @@ function feelClickOnUploadFile() {
   }
 }
 
-function closeImageEditingForm(event) {
+function closeImageEditingForm(evt) {
   if(!(document.activeElement.matches('.text__hashtags') || document.activeElement.matches('.text__description')) &&
-      (isEscapeKey(event) || event.target.matches('#upload-cancel') || event.type === 'submit')) {
-    event.preventDefault();
+      (isEscapeKey(evt) || evt.target.matches('#upload-cancel') || evt.type === 'submit')) {
+    evt.preventDefault();
     document.querySelector('body').classList.remove('modal-open');
     imagePreviewEditingForm.classList.add('hidden');
     previewImage.classList.remove(effectsList.querySelector(`.effects__preview--${effectsList.querySelector('input:checked').value}`).classList[1]);
@@ -72,17 +75,16 @@ function unblockSubmitButton() {
   submitButton.disabled = false;
 }
 
-imageEditingForm.addEventListener('submit', (event) => {
-  event.preventDefault();
+imageEditingForm.addEventListener('submit', (evt) => {
+  evt.preventDefault();
   const isValid = pristine.validate();
   if (isValid) {
     blockSubmitButton();
     sendFotoToServer(
       () => {
-        closeImageEditingForm(event);
+        closeImageEditingForm(evt);
         showSuccessLoadMessage();
         unblockSubmitButton();
-        document.querySelector('.img-filters').classList.remove('img-filters--inactive');
       },
       () => {
         document.removeEventListener('keydown', closeImageEditingForm);
@@ -97,23 +99,23 @@ imageEditingForm.addEventListener('submit', (event) => {
 function zoomIn() {
   let currentValue = zoonInput.value.substring(0, zoonInput.value.length-1);
   currentValue = +currentValue >= 100 ? 100 : +currentValue + 25;
-  previewImage.style.transform = `scale(${(+currentValue/100).toFixed(2)})`;
+  previewImage.querySelector('img').style.transform = `scale(${(+currentValue/100).toFixed(2)})`;
   zoonInput.value = `${currentValue}%`;
 }
 
 function zoomOut() {
   let currentValue = zoonInput.value.substring(0, zoonInput.value.length-1);
   currentValue = +currentValue <= 25 ? 25 : +currentValue - 25;
-  previewImage.style.transform = `scale(${(+currentValue/100).toFixed(2)})`;
+  previewImage.querySelector('img').style.transform = `scale(${(+currentValue/100).toFixed(2)})`;
   zoonInput.value = `${currentValue}%`;
 }
 
-function chooseEffect(event) {
+function chooseEffect(evt) {
   let targetClassName = '';
-  if (event.target.classList[0] === 'effects__label') {
-    targetClassName = event.target.querySelector('.effects__preview').classList[1];
+  if (evt.target.classList[0] === 'effects__label') {
+    targetClassName = evt.target.querySelector('.effects__preview').classList[1];
   } else {
-    targetClassName = event.target.classList[1];
+    targetClassName = evt.target.classList[1];
   }
   if (targetClassName) {
     for (const className of previewImage.classList) {
@@ -126,10 +128,12 @@ function chooseEffect(event) {
     if (slider.noUiSlider) {
       slider.noUiSlider.destroy();
     }
+    uploadEffectLevel.classList.remove('hidden');
     switch (targetClassName) {
       case 'effects__preview--none':
         previewImage.style.filter = '';
         effectLevelValue.value = '';
+        uploadEffectLevel.classList.add('hidden');
         break;
       case 'effects__preview--chrome':
         getSlider(0, 1, 1, 0.1, 1);
@@ -171,8 +175,6 @@ function chooseEffect(event) {
           previewImage.style.filter = `brightness(${effectLevelValue.value})`;
         });
         break;
-      default:
-        break;
     }
     previewImage.classList.add(targetClassName);
   }
@@ -203,12 +205,24 @@ function getSlider(minValue, maxValue, start, step, fix) {
 
 function validateHashtag(value) {
   const re = new RegExp('^#[A-Za-zА-Яа-яЁё0-9]{1,19}$');
+  if ((value.match(/#/g) || []).length > MAX_HASHTAG_COUNT) {
+    return false;
+  }
   const hashtags = value.split(' ');
-  return hashtags.every((elem) => re.test(elem)) || !value;
+  hashtags.sort();
+  for (let i = 0; i < hashtags.length-1; i++) {
+    if (hashtags[i] === '') {
+      continue;
+    }
+    if (hashtags[i + 1].trim().toLowerCase() === hashtags[i].trim().toLowerCase()) {
+      return false;
+    }
+  }
+  return hashtags.every((elem) => (re.test(elem.trim()) || elem.trim() === '') || !value);
 }
 
 function validateTextComment(value) {
-  return value.length < 141 || !value;
+  return value.length <= MAX_LENGTH_COMMENT || !value;
 }
 
 function showImgInPreview() {
@@ -220,3 +234,5 @@ function showImgInPreview() {
     preview.src = URL.createObjectURL(file);
   }
 }
+
+export {closeImageEditingForm, initUploadFileForm};

@@ -1,35 +1,34 @@
 import {isEscapeKey} from './util.js';
 import {closeImageEditingForm} from './form.js';
 
-export {showErrorMessage, showSuccessLoadMessage, showErrorLoadPhotoMessage};
-
 let errorWindow;
 
 function showSuccessLoadMessage(){
   const successMessage = document.querySelector('#success').content.querySelector('.success').cloneNode(true);
-  successMessage.addEventListener('click', cloceLoadMessage);
-  document.addEventListener('keydown', cloceLoadMessage);
+  successMessage.addEventListener('click', cloceLoadMessageSuccess);
+  document.addEventListener('keydown', cloceLoadMessageSuccess);
   document.querySelector('body').appendChild(successMessage);
 }
 
-function cloceLoadMessage(event) {
-  if (document.querySelector('.success') && (isEscapeKey(event) || event.target.classList[0] === 'success__button' || event.target.classList[0] === 'success')) {
+function cloceLoadMessageSuccess(evt) {
+  if (document.querySelector('.success') && (isEscapeKey(evt)) || evt.target.classList[0] === 'success__button' || evt.target.classList[0] === 'success') {
     document.querySelector('.success').remove();
-    document.removeEventListener('keydown', cloceLoadMessage);
-    return;
+    document.removeEventListener('keydown', cloceLoadMessageSuccess);
   }
-  if (document.querySelector('.error') && isEscapeKey(event) || (event.target.classList[0] === 'error__button' || event.target.classList[0] === 'error')) {
+}
+
+function cloceLoadMessageError(evt) {
+  if (document.querySelector('.error') && isEscapeKey(evt) || (evt.target.classList[0] === 'error__button' || evt.target.classList[0] === 'error')) {
     document.querySelector('.error').remove();
-    document.removeEventListener('keydown', cloceLoadMessage);
+    document.removeEventListener('keydown', cloceLoadMessageError);
     document.addEventListener('keydown', closeImageEditingForm);
   }
 }
 
 function showErrorLoadPhotoMessage() {
   const error = document.querySelector('#error').content.querySelector('.error').cloneNode(true);
-  error.addEventListener('click', cloceLoadMessage);
-  error.style.zIndex = '2'; //иначе под форму залезает...
-  document.addEventListener('keydown', cloceLoadMessage);
+  error.addEventListener('click', cloceLoadMessageError);
+  document.addEventListener('keydown', cloceLoadMessageError);
   document.querySelector('body').appendChild(error);
 }
 
@@ -50,3 +49,5 @@ function removeErrorWindow() {
     errorWindow.remove();
   }
 }
+
+export {showErrorMessage, showSuccessLoadMessage, showErrorLoadPhotoMessage};

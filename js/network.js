@@ -1,11 +1,11 @@
-import {showPhoto} from './picture.js';
+import {initPhoto} from './picture.js';
 import {showErrorMessage} from './modal-windows.js';
 
-export {getFotosFromServer, sendFotoToServer};
+const BASE_ADDRESS = 'https://26.javascript.pages.academy/kekstagram';
 
 function getFotosFromServer() {
   fetch(
-    'https://26.javascript.pages.academy/kekstagram/data'
+    `${BASE_ADDRESS  }/data`
   )
     .then((response) => {
       if (response.ok) {
@@ -14,7 +14,7 @@ function getFotosFromServer() {
       throw new Error(`Код ответа сервера "${response.status}". Сообщение "${response.statusText}"`);
     })
     .then((data) => {
-      showPhoto(data);
+      initPhoto(data);
     })
     .catch((err) => {
       showErrorMessage(err.message);
@@ -23,7 +23,7 @@ function getFotosFromServer() {
 
 function sendFotoToServer(onSuccess, onFail, body) {
   fetch(
-    'https://26.javascript.pages.academy/kekstagram',
+    BASE_ADDRESS,
     {
       method: 'POST',
       body,
@@ -40,3 +40,5 @@ function sendFotoToServer(onSuccess, onFail, body) {
       onFail();
     });
 }
+
+export {getFotosFromServer, sendFotoToServer};
